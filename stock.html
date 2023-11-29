@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Aksjepris Endring</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding-top: 20px;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            width: 80%;
+            margin: 0 auto;
+        }
+
+        .aksjeButton {
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .aksjeButton:hover {
+            background-color: #0056b3;
+        }
+
+        #inputForm {
+            display: none;
+            margin-top: 20px;
+        }
+
+        input[type="text"], input[type="number"] {
+            padding: 10px;
+            margin: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            width: 200px;
+        }
+
+        #submitButton {
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #submitButton:hover {
+            background-color: #218838;
+        }
+
+        .leaderboard-container {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 30px;
+        }
+
+        .entry {
+            padding: 5px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .entry:last-child {
+            border-bottom: none;
+        }
+
+        .name {
+            font-weight: bold;
+        }
+
+        .value.positive {
+            color: green;
+        }
+
+        .value.negative {
+            color: red;
+        }
+
+        .value.neutral {
+            color: black;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button id="button1" class="aksjeButton" data-aksje="Aksje 1">Endring Equinor</button>
+        <button id="button2" class="aksjeButton" data-aksje="Aksje 2">Endring Viaplay</button>
+
+        <div id="inputForm">
+            <h2 id="aksjeTittel">Angi hvor mye du tror aksjeprisen vil endre seg</h2>
+            <h3 id="aksjeTittel">Bruk kallenavn</h3>
+            <input type="text" id="nameInput" placeholder="Navnet ditt">
+            <input type="number" id="priceChangeInput" placeholder="Endring i aksjepris">
+            <button id="submitButton">Send inn</button>
+        </div>
+
+        <div class="leaderboard-container">
+            <div id="leaderboard1">
+                <h3 class="leaderboard-title">Leaderboard for Equinor</h3>
+            </div>
+
+            <div id="leaderboard2">
+                <h3 class="leaderboard-title">Leaderboard for Viaplay</h3>
+            </div>
+        </div>
+    </div>
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+        import { getDatabase, ref, push, onValue, orderByChild, equalTo, query } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js";
+    
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAgz6Q0jpr4LeFF3vtJFUIvIbgQzZcl4TE",
+            authDomain: "stonk-f0508.firebaseapp.com",
+            projectId: "stonk-f0508",
+            storageBucket: "stonk-f0508.appspot.com",
+            messagingSenderId: "237393283025",
+            appId: "1:237393283025:web:168a3e0ed8737cfa6382f0"
+        };
+    
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        let guesses = {
+            'Aksje 1': [],
+            'Aksje 2': []
+        };
+
+        // Mapping fra aksje-koder til navn
+        const aksjeNavn = {
+            'Aksje 1': 'Equinor',
+            'Aksje 2': 'Viaplay'
+        };
+    
+        let selectedAksje = '';
+
+        document.querySelectorAll('.aksjeButton').forEach(button => {
+            button.onclick = function() {
+                selectedAksje = this.getAttribute('data-aksje');
+                const aksjeNavnForVisning = aksjeNavn[selectedAksje] || selectedAksje; // Faller tilbake til den originale verdien hvis ingen mapping er funnet
+                document.getElementById("aksjeTittel").innerText = `Angi hvor mye du tror ${aksjeNavnForVisning} vil endre seg`;
+                document.getElementById("inputForm").style.display = "block";
+            };
+        });;
+    
+        document.getElementById("submitButton").onclick = function() {
+            const name = document.getElementById("nameInput").value.trim();
+            const priceChangeInput = document.getElementById("priceChangeInput");
+            const priceChange = parseFloat(priceChangeInput.value);
+    
+            if (name && !isNaN(priceChange) && priceChangeInput.checkValidity()) {
+                push(ref(database, 'guesses'), {
+                    aksje: selectedAksje,
+                    name: name,
+                    priceChange: priceChange
+                });
+                priceChangeInput.value = '';
+                document.getElementById("nameInput").value = '';
+            }
+        };
+    
+        function setupLeaderboardListener(aksje) {
+        const guessesRef = ref(database, 'guesses');
+        onValue(query(guessesRef, orderByChild('aksje'), equalTo(aksje)), (snapshot) => {
+            var leaderboardData = [];
+            snapshot.forEach((childSnapshot) => {
+                var guess = childSnapshot.val();
+                if (guess.aksje === aksje) {
+                    leaderboardData.push(guess);
+                }
+            });
+            leaderboardData.sort((a, b) => b.priceChange - a.priceChange);
+            updateLeaderboard(aksje, leaderboardData);
+        });
+        }
+
+        function updateLeaderboard(aksje, leaderboardData) {
+            const aksjeNavnForVisning = aksjeNavn[aksje] || aksje; // Faller tilbake til den originale verdien hvis ingen mapping er funnet
+            const leaderboardDiv = document.getElementById(`leaderboard${aksje.split(' ')[1]}`);
+            leaderboardDiv.innerHTML = '<h3 class="leaderboard-title">Leaderboard for ' + aksjeNavnForVisning + '</h3>';
+
+            leaderboardData.forEach(guess => {
+                const entryDiv = document.createElement("div");
+                entryDiv.classList.add("entry");
+
+                const nameSpan = document.createElement("span");
+                nameSpan.classList.add("name");
+                nameSpan.textContent = guess.name + ': ';
+
+                const valueSpan = document.createElement("span");
+                valueSpan.classList.add("value");
+                valueSpan.textContent = guess.priceChange + '%';
+                valueSpan.classList.add(guess.priceChange > 0 ? 'positive' : guess.priceChange < 0 ? 'negative' : 'neutral');
+
+                entryDiv.appendChild(nameSpan);
+                entryDiv.appendChild(valueSpan);
+                leaderboardDiv.appendChild(entryDiv);
+            });
+        }
+
+        setupLeaderboardListener("Aksje 1");
+        setupLeaderboardListener("Aksje 2");
+    </script>
+</body>
+</html>
