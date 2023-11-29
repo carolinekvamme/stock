@@ -91,15 +91,16 @@
     </style>
 </head>
 <body>
+    <h1>Endring aksjepris ila 30.nov</h1>
     <div class="container">
         <button id="button1" class="aksjeButton" data-aksje="Aksje 1">Endring Equinor</button>
         <button id="button2" class="aksjeButton" data-aksje="Aksje 2">Endring Viaplay</button>
 
         <div id="inputForm">
-            <h2 id="aksjeTittel">Angi hvor mye du tror aksjeprisen vil endre seg (ila 30.nov)</h2>
+            <h2 id="aksjeTittel">Angi hvor mye du tror aksjeprisen vil endre seg i løpet av 30.nov</h2>
             <h3 id="aksjeTittel">Bruk kallenavn</h3>
             <input type="text" id="nameInput" placeholder="Navnet ditt">
-            <input type="number" id="priceChangeInput" placeholder="Endring i aksjepris">
+            <input type="number" id="priceChangeInput" placeholder="Endring i aksjepris" step="0.01">
             <button id="submitButton">Send inn</button>
         </div>
 
@@ -149,7 +150,7 @@
             button.onclick = function() {
                 selectedAksje = this.getAttribute('data-aksje');
                 const aksjeNavnForVisning = aksjeNavn[selectedAksje] || selectedAksje; // Faller tilbake til den originale verdien hvis ingen mapping er funnet
-                document.getElementById("aksjeTittel").innerText = `Angi hvor mye du tror ${aksjeNavnForVisning} vil endre seg`;
+                document.getElementById("aksjeTittel").innerText = `Angi hvor mye du tror ${aksjeNavnForVisning} vil endre seg i løpet av 30.nov`;
                 document.getElementById("inputForm").style.display = "block";
             };
         });;
