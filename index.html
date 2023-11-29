@@ -105,11 +105,11 @@
 
         <div class="leaderboard-container">
             <div id="leaderboard1">
-                <h3 class="leaderboard-title">Leaderboard for Equinor</h3>
+                <h3 class="leaderboard-title">Gjetting for Equinor</h3>
             </div>
 
             <div id="leaderboard2">
-                <h3 class="leaderboard-title">Leaderboard for Viaplay</h3>
+                <h3 class="leaderboard-title">Gjetting for Viaplay</h3>
             </div>
         </div>
     </div>
@@ -188,7 +188,7 @@
         function updateLeaderboard(aksje, leaderboardData) {
             const aksjeNavnForVisning = aksjeNavn[aksje] || aksje; // Faller tilbake til den originale verdien hvis ingen mapping er funnet
             const leaderboardDiv = document.getElementById(`leaderboard${aksje.split(' ')[1]}`);
-            leaderboardDiv.innerHTML = '<h3 class="leaderboard-title">Leaderboard for ' + aksjeNavnForVisning + '</h3>';
+            leaderboardDiv.innerHTML = '<h3 class="leaderboard-title">Gjetting for ' + aksjeNavnForVisning + '</h3>';
 
             leaderboardData.forEach(guess => {
                 const entryDiv = document.createElement("div");
